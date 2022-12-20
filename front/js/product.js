@@ -1,56 +1,81 @@
-//------------------------------------------------------------------------
-// Récupération et intégration du produit par l'id produit dans l'URL 
-//------------------------------------------------------------------------
+// Récupère l'URL de la page
 
-const getIdByUrl = new URLSearchParams(document.location.search);
-const id = getIdByUrl.get('_id'); // Récupère l'id produit dans l'URL
+function getCurrentURL() {
+    return window.location.href
+}
+// console.log(getCurrentURL());
 
-fetch(`http://localhost:3000/api/products/${id}`) // Récupération du produit par l'id
-    .then((response) => response.json())
-    .then((product) => { // Intégre les données dans le DOM
-        document.getElementById("title").innerText = product.name;
-        document.getElementById("description").innerText = product.description;
-        document.getElementById("price").innerText = product.price;
-        document.getElementsByClassName("item__img")[0].innerHTML = `<img src="${product.imageUrl}" alt="${product.altTxt}"></img>`;
-        for (let color of product.colors) { // Intégre les couleurs dans l'élément select
-            document.getElementById("colors").innerHTML += `<option value="${color}">${color}</option>`;
-        }
-    });
+const url = new URL(getCurrentURL());
+const id = url.searchParams.get("_id");
+// console.log(id);
 
-//------------------------------------------------------------------------
-// Récupération des données quantité et couleur
-//------------------------------------------------------------------------
+async function transformResponseToJson(response) {
+    return response.json();
+}
 
-document.getElementById("addToCart").onclick = function () { // Ajoute la fonction onclick à l'élément button
-    let quantityOfProduct = parseInt(document.getElementById("quantity").value); // Récupère la valeur quantité
-    let colorOfProduct = document.getElementById("colors").value; // Récupère la valeur couleur
+fetch(`http://localhost:3000/api/products/${id}`)
+    .then(transformResponseToJson)
+    .then(product => loadProductDetails(product));
 
-    let currentCart = localStorage.getItem("cart"); // Crée le panier
 
-    if (currentCart === null) { // Si le panier est vide
-        let products = Array({ // Créer un tableau contenant les valeurs id, couleur et quantité
-            "id": id, "color": colorOfProduct, "quantity": quantityOfProduct
-        })
-        let productsJson = JSON.stringify(products); // Convertir la valeur en chaîne Json
-        localStorage.setItem("cart", productsJson); // Stocker dans le localStorage
-    } else {
-        let currentProducts = JSON.parse(currentCart); // Sinon récupérer le panier en parsant le Json pour récupérer l'objet Javascript
-        
-        matchedProductInCart = currentProducts.find(p => p.id === id && p.color === colorOfProduct);
-        if (matchedProductInCart != undefined) { // Si le panier contient un objet qui a le même id et la même couleur
-            matchedProductInCart.quantity += quantityOfProduct;
-            localStorage.setItem("cart",JSON.stringify(currentProducts));
-        } else {
-            let product = {
-                "id": id,
-                "color": colorOfProduct,
-                "quantity": quantityOfProduct
-            }
-            currentProducts.push(product);
-            let productsJson = JSON.stringify(currentProducts);
-            localStorage.setItem("cart", productsJson);
-        }
-
+// Intègre les données produit dans le DOM
+function loadProductDetails(product) {
+    document.getElementById("price").innerText = product.price;
+    document.getElementById("description").innerText = product.description;
+    document.getElementById("title").innerText = product.name;
+    document.getElementsByClassName("item__img")[0].innerHTML = `<img src="${product.imageUrl}" alt="${product.altTxt}">`;
+    for (let color of product.colors) {
+        document.getElementById("colors").innerHTML += `<option value="${color}">${color}</option>`;
     }
 }
+
+// Enregistre le panier 
+function saveCart(cart) {
+    localStorage.setItem("cart", JSON.stringify(cart));
+}
+
+// Récupère le panier
+function getCart() {
+    return JSON.parse(localStorage.getItem("cart"));
+}
+
+// Ajoute au panier
+function addToCart() {
+    let currentCart = getCart();
+    // Récupère la quantité
+    const quantityOfProduct = parseInt(document.getElementById("quantity").value);
+    // Récupère la couleur
+    const colorOfProduct = document.getElementById("colors").value;
+    // Récupère l'image
+    const productImage = document.getElementsByClassName("item__img")[0].getElementsByTagName("img")[0].src;
+    // Récupère le nom
+    const nameOfProduct = document.getElementById("title").innerText;
+    // Récupère le prix
+    const priceOfProduct = document.getElementById("price").innerText;
+    if (currentCart == null) {
+        const products = Array({
+            "id": id, "color": colorOfProduct, "quantity": quantityOfProduct,
+            "image": productImage, "title": nameOfProduct, "price": priceOfProduct
+        });
+        saveCart(products);
+    }
+    else {
+        let productFound = currentCart.find(product => product.id == id && product.color == colorOfProduct);
+        if (productFound !== undefined) {
+            productFound.quantity += quantityOfProduct
+            saveCart(currentCart)
+        }
+        else {
+            currentCart.push({
+                "id": id, "color": colorOfProduct, "quantity": quantityOfProduct,
+                "image": productImage, "title": nameOfProduct, "price": priceOfProduct
+            });
+            saveCart(currentCart);
+        }
+    }
+}
+
+// Ajoute la fonction onclick sur le bouton "Ajouter au panier"
+document.getElementById("addToCart").onclick = addToCart;
+
 
