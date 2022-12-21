@@ -29,7 +29,7 @@ function loadProductDetails(product) {
     }
 }
 
-// Enregistre le panier 
+// Enregistre le panier dans le localStorage
 function saveCart(cart) {
     localStorage.setItem("cart", JSON.stringify(cart));
 }
@@ -51,7 +51,7 @@ function addToCart() {
     // Récupère le nom
     const nameOfProduct = document.getElementById("title").innerText;
     // Récupère le prix
-    const priceOfProduct = document.getElementById("price").innerText;
+    const priceOfProduct = parseInt(document.getElementById("price").innerText);
     if (currentCart == null) {
         const products = Array({
             "id": id, "color": colorOfProduct, "quantity": quantityOfProduct,
