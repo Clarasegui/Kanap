@@ -7,20 +7,20 @@ function saveCart(currentCart) {
 function insertCurrentCartToPage() {
     // Récupère le panier dans le localStorage
     const getCurrentCartFromLocalStorage = window.localStorage.getItem("cart");
-
+    if (getCurrentCartFromLocalStorage === null){
+        return;
+    }
     // Convertit le panier en objet
     const currentCart = JSON.parse(getCurrentCartFromLocalStorage);
-
     // Calcule la quantité totale des produits
     const totalQuantity = currentCart.reduce((sum, product) => {
         return sum + parseInt(product.quantity);
     }, 0);
-
     // Calcule le prix total des produits
     const totalPrice = currentCart.reduce((sum, product) => {
         return sum + product.price * product.quantity;
     }, 0);
-
+    // Insère la quanité et le prix total dans le DOM
     document.getElementById("totalQuantity").innerText = totalQuantity;
     document.getElementById("totalPrice").innerText = totalPrice;
     // Si le panier est vide
@@ -53,19 +53,17 @@ function insertCurrentCartToPage() {
             </div>
           </article>`;
         }
-
         // Appelle la fonction
         addEventListenerOnQuantities(currentCart);
         // Appelle la fonction
         addEventListenerOnDelete(currentCart)
-
     }
 }
+
 // Appelle la fonction
 insertCurrentCartToPage();
 
 // Fonction de modification de la quantité par l'utilisateur et mise à jour dans le localStorage
-
 function addEventListenerOnQuantities(currentCart) {
     for (let input of document.getElementsByName("itemQuantity")) {
         let productColorIncart = input.closest("article").dataset.color
@@ -93,11 +91,7 @@ function removeProductFromCart(productIdToDelete, productColorToDelete, currentC
     insertCurrentCartToPage()
 }
 
-
-
 const contactForm = document.getElementsByClassName("cart__order__form")[0];
-
-
 
 contactForm.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -107,9 +101,15 @@ contactForm.addEventListener("submit", (event) => {
     const city = document.getElementById("city").value;
     const email = document.getElementById("email").value;
     const errorMessage = "Veuillez renseigner ce champs";
+    const getCurrentCartFromLocalStorage = window.localStorage.getItem("cart");
+    const currentCart = JSON.parse(getCurrentCartFromLocalStorage);
     let emailRegex = /^[a-zA-Z0-9]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
     let nameRegex = /^[A-Za-z]+$/;
     let formIsValid = true;
+    if (currentCart === null || currentCart.length === 0) {
+        window.alert("Votre panier est vide");
+        return;
+    }
     if (firstName === "") {
         document.getElementById("firstNameErrorMsg").innerText = errorMessage;
         formIsValid = false;

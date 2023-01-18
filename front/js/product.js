@@ -3,11 +3,9 @@
 function getCurrentURL() {
     return window.location.href
 }
-// console.log(getCurrentURL());
 
 const url = new URL(getCurrentURL());
 const id = url.searchParams.get("_id");
-// console.log(id);
 
 async function transformResponseToJson(response) {
     return response.json();
@@ -52,18 +50,32 @@ function addToCart() {
     const nameOfProduct = document.getElementById("title").innerText;
     // Récupère le prix
     const priceOfProduct = parseInt(document.getElementById("price").innerText);
+    if (quantityOfProduct > 100) {
+        window.alert("Veuillez choisir une quantité inférieure ou égale à 100");
+        return;
+    }
+    if (colorOfProduct === "") {
+        window.alert("Veuillez choisir une couleur");
+        return;
+    }
+    if (quantityOfProduct === 0) {
+        window.alert("Veuillez choisir une quantité");
+        return;
+    }
     if (currentCart == null) {
         const products = Array({
             "id": id, "color": colorOfProduct, "quantity": quantityOfProduct,
             "image": productImage, "title": nameOfProduct, "price": priceOfProduct
         });
         saveCart(products);
+        window.alert("Ajouté au panier !");
     }
     else {
         let productFound = currentCart.find(product => product.id == id && product.color == colorOfProduct);
         if (productFound !== undefined) {
             productFound.quantity += quantityOfProduct
             saveCart(currentCart)
+            window.alert("Ajouté au panier !");
         }
         else {
             currentCart.push({
@@ -71,6 +83,7 @@ function addToCart() {
                 "image": productImage, "title": nameOfProduct, "price": priceOfProduct
             });
             saveCart(currentCart);
+            window.alert("Ajouté au panier !");
         }
     }
 }
