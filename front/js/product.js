@@ -70,7 +70,7 @@ function addToCart() {
             "image": productImage, "title": nameOfProduct, "price": priceOfProduct
         });
         saveCart(products);
-        window.alert("Ajouté au panier !");
+        window.alert("Produit ajouté au panier !");
     }
     else {
         let productFound = currentCart.find(product => product.id == id && product.color == colorOfProduct);

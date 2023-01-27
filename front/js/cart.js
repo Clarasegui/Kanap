@@ -3,6 +3,9 @@ function saveCart(currentCart) {
     localStorage.setItem("cart", JSON.stringify(currentCart));
 }
 
+// Défini la variable du panier
+let currentCart = JSON.parse(localStorage.getItem("cart"));
+
 // Crée la fonction pour insérer les données produits dans le DOM
 function insertCurrentCartToPage() {
     // Crée la variable de récupération du panier dans le localStorage
@@ -22,7 +25,7 @@ function insertCurrentCartToPage() {
     // Insère le prix total dans le DOM
     document.getElementById("totalPrice").innerText = totalPrice;
     // Si le panier est vide
-    if (currentCart.length === 0) {
+    if (getCurrentCartFromLocalStorage === null || currentCart.length === 0) {
         document.getElementById("cart__items").innerHTML = `<p>Votre panier est vide.</p>`;
         return;
     }
@@ -124,6 +127,7 @@ const contactForm = document.getElementsByClassName("cart__order__form")[0];
 // Ajoute l'event listener sur le bouton "Submit"
 contactForm.addEventListener("submit", (event) => {
     event.preventDefault();
+    let cart = JSON.parse(localStorage.getItem("cart"));
     const firstName = document.getElementById("firstName").value;
     const lastName = document.getElementById("lastName").value;
     const address = document.getElementById("address").value;
@@ -191,7 +195,6 @@ contactForm.addEventListener("submit", (event) => {
     }
     // Si le formulaire est valide
     if (formIsValid) {
-        let cart = JSON.parse(localStorage.getItem("cart"));
         const dataToPost = {
             "contact": {
                 "firstName": firstName,
@@ -202,6 +205,7 @@ contactForm.addEventListener("submit", (event) => {
             },
             "products": [cart.map(product => product.id)]
         }
+
         fetch(`http://localhost:3000/api/products/order`, {
             method: 'POST',
             headers: {
@@ -217,6 +221,5 @@ contactForm.addEventListener("submit", (event) => {
             .catch((error) => {
                 console.error('Error:', error);
             });
-
     }
 })

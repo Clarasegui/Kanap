@@ -1,12 +1,18 @@
-// Crée la fonction 
+// Crée la fonction qui intègre l'id de la commande dans le DOM
 function setOrderIdToConfirmationPage() {
-    // Crée la variable url
     const url = new URL(window.location.href);
-    // Crée la variable orderId
     const orderId = url.searchParams.get("orderId");
-    // Intégre l'orderId dans le DOM
     document.getElementById("orderId").innerText = orderId;
+}
+
+// Créé la fonction qui vide le panier
+function clearCart() {
+    let emptyCart = [];
+    localStorage.setItem("cart", JSON.stringify(emptyCart));
 }
 
 // Appelle la fonction
 setOrderIdToConfirmationPage();
+
+// Appelle la fonction
+clearCart();
