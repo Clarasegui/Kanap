@@ -1,15 +1,12 @@
-// Enregistre le panier dans le localStorage
+// Crée la fonction qui enregistre le panier dans le localStorage
 function saveCart(currentCart) {
     localStorage.setItem("cart", JSON.stringify(currentCart));
 }
 
-// Fonction pour insérer les données produits dans le DOM
+// Crée la fonction pour insérer les données produits dans le DOM
 function insertCurrentCartToPage() {
-    // Récupère le panier dans le localStorage
+    // Crée la variable de récupération du panier dans le localStorage
     const getCurrentCartFromLocalStorage = window.localStorage.getItem("cart");
-    if (getCurrentCartFromLocalStorage === null){
-        return;
-    }
     // Convertit le panier en objet
     const currentCart = JSON.parse(getCurrentCartFromLocalStorage);
     // Calcule la quantité totale des produits
@@ -20,16 +17,20 @@ function insertCurrentCartToPage() {
     const totalPrice = currentCart.reduce((sum, product) => {
         return sum + product.price * product.quantity;
     }, 0);
-    // Insère la quanité et le prix total dans le DOM
+    // Insère la quanité totale dans le DOM
     document.getElementById("totalQuantity").innerText = totalQuantity;
+    // Insère le prix total dans le DOM
     document.getElementById("totalPrice").innerText = totalPrice;
     // Si le panier est vide
-    if (currentCart === null) {
-        console.log("Votre panier est vide")
+    if (currentCart.length === 0) {
+        document.getElementById("cart__items").innerHTML = `<p>Votre panier est vide.</p>`;
+        return;
     }
     // S'il y a un ou des produits dans le panier
     else {
+        // Permet de ne pas afficher plusieurs fois le produit
         document.getElementById("cart__items").innerHTML = null
+        // Pour chaque produit du panier
         for (let product of currentCart) {
             document.getElementById("cart__items").innerHTML += `<article class="cart__item" data-id="${product.id}" data-color="${product.color}">
             <div class="cart__item__img">
@@ -63,36 +64,64 @@ function insertCurrentCartToPage() {
 // Appelle la fonction
 insertCurrentCartToPage();
 
-// Fonction de modification de la quantité par l'utilisateur et mise à jour dans le localStorage
+// Fonction d'ajout de l'event listener sur l'input "itemQuantity"
 function addEventListenerOnQuantities(currentCart) {
+    // Pour chaque input ayant la classe classe "itemQuantity"
     for (let input of document.getElementsByName("itemQuantity")) {
+        // Créé la variable productColorInCart
         let productColorIncart = input.closest("article").dataset.color
+        // Créé la variable productIdInCart
         let productIdInCart = input.closest("article").dataset.id
+        // Ajoute l'eventlistener sur l'input
         input.addEventListener('change', function () {
-            productFoundInCart = currentCart.find(product => product.id === productIdInCart && product.color === productColorIncart);
-            productFoundInCart.quantity = parseInt(input.value);
-            saveCart(currentCart)
-            insertCurrentCartToPage()
+            // Si la valeur de l'input est supérieure à 100 afficher un message d'erreur
+            if (input.value > 100) {
+                window.alert("Veuillez choisir une quantité inférieure ou égale à 100");
+                return;
+            }
+            // Si la valeur de l'input est inférieure ou égale à 0 afficher un message d'erreur
+            if (input.value <= 0) {
+                window.alert("Veuillez choisir une quantité supérieure à 0");
+                return;
+            }
+            // Enregistre le panier et insère dans le DOM
+            else {
+                productFoundInCart = currentCart.find(product => product.id === productIdInCart && product.color === productColorIncart);
+                productFoundInCart.quantity = parseInt(input.value);
+                saveCart(currentCart)
+                insertCurrentCartToPage()
+            }
         })
     }
 }
 
-// Fonction de suppression du produit par l'utilisateur et mise à jour dans le localStorage
+// Fonction d'ajout du event listener sur "Supprimer"
 function addEventListenerOnDelete(currentCart) {
+    // Pour chaque élément p ayant la classe "deleteItem"
     for (let p of document.getElementsByClassName("deleteItem")) {
+        // Créé la variable productIdToBeDelete
         let productIdToDelete = p.closest("article").dataset.id;
+        // Créé la variable productColorToBeDelete
         let productColorToDelete = p.closest("article").dataset.color;
+        // Ajoute l'event listener 
         p.addEventListener('click', () => removeProductFromCart(productIdToDelete, productColorToDelete, currentCart));
     }
 }
+
+// Fonction de suppression du produit par l'utilisateur et mise à jour dans le localStorage
 function removeProductFromCart(productIdToDelete, productColorToDelete, currentCart) {
+    // Garde dans le DOM les produits différents de celui que l'on supprime
     productsInCartToKeep = currentCart.filter(product => product.id !== productIdToDelete || product.color !== productColorToDelete);
-    saveCart(productsInCartToKeep)
-    insertCurrentCartToPage()
+    // Enregistre le panier
+    saveCart(productsInCartToKeep);
+    // Insère le panier dans le DOM
+    insertCurrentCartToPage();
 }
 
+// Créé la variable contactForm
 const contactForm = document.getElementsByClassName("cart__order__form")[0];
 
+// Ajoute l'event listener sur le bouton "Submit"
 contactForm.addEventListener("submit", (event) => {
     event.preventDefault();
     const firstName = document.getElementById("firstName").value;
@@ -104,8 +133,19 @@ contactForm.addEventListener("submit", (event) => {
     const getCurrentCartFromLocalStorage = window.localStorage.getItem("cart");
     const currentCart = JSON.parse(getCurrentCartFromLocalStorage);
     let emailRegex = /^[a-zA-Z0-9]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
-    let nameRegex = /^[A-Za-z]+$/;
+    let nameRegex = /^[A-Za-z]{3,}$/;
     let formIsValid = true;
+    for (let input of document.getElementsByName("itemQuantity")) {
+
+        if (input.value > 100) {
+            window.alert("Veuillez choisir une quantité inférieure ou égale à 100");
+            return;
+        }
+        if (input.value <= 0) {
+            window.alert("Veuillez choisir une quantité supérieure à 0");
+            return;
+        }
+    }
     if (currentCart === null || currentCart.length === 0) {
         window.alert("Votre panier est vide");
         return;
@@ -149,6 +189,7 @@ contactForm.addEventListener("submit", (event) => {
     } else {
         document.getElementById("emailErrorMsg").innerText = null;
     }
+    // Si le formulaire est valide
     if (formIsValid) {
         let cart = JSON.parse(localStorage.getItem("cart"));
         const dataToPost = {
@@ -161,7 +202,6 @@ contactForm.addEventListener("submit", (event) => {
             },
             "products": [cart.map(product => product.id)]
         }
-
         fetch(`http://localhost:3000/api/products/order`, {
             method: 'POST',
             headers: {
@@ -171,7 +211,6 @@ contactForm.addEventListener("submit", (event) => {
         })
             .then((response) => response.json())
             .then((data) => {
-                console.log('Success:', data);
                 orderId = data.orderId;
                 window.location.href = "confirmation.html?orderId=" + orderId;
             })

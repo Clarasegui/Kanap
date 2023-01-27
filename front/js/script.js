@@ -1,8 +1,10 @@
 // Appel, récupération et intégration des produits de l'API
-
 async function loadProductsToHtml() {
-  fetch("http://localhost:3000/api/products") // Attend la réponse de l'API
+  // Attend la réponse de l'API
+  fetch("http://localhost:3000/api/products")
+    // Transforme la réponse en Json
     .then((response) => response.json())
+    // Intègre les informations produit dans le DOM
     .then((products) => {
       for (let product of products) {
         document.getElementById("items").innerHTML += `<a href="./product.html?_id=${product._id}">
@@ -15,4 +17,5 @@ async function loadProductsToHtml() {
     })
 }
 
+// Appelle la fonction
 loadProductsToHtml();

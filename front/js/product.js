@@ -1,18 +1,16 @@
 // Récupère l'URL de la page
-
 function getCurrentURL() {
     return window.location.href
 }
 
+// Créé la variable url
 const url = new URL(getCurrentURL());
+// Créé la variable id
 const id = url.searchParams.get("_id");
 
-async function transformResponseToJson(response) {
-    return response.json();
-}
-
+// Appel à l'API
 fetch(`http://localhost:3000/api/products/${id}`)
-    .then(transformResponseToJson)
+    .then((response) => response.json())
     .then(product => loadProductDetails(product));
 
 
@@ -40,28 +38,32 @@ function getCart() {
 // Ajoute au panier
 function addToCart() {
     let currentCart = getCart();
-    // Récupère la quantité
+    // Créé la variable de quantité
     const quantityOfProduct = parseInt(document.getElementById("quantity").value);
-    // Récupère la couleur
+    // Créé la variable de couleur
     const colorOfProduct = document.getElementById("colors").value;
-    // Récupère l'image
+    // Créé la variable d'image
     const productImage = document.getElementsByClassName("item__img")[0].getElementsByTagName("img")[0].src;
-    // Récupère le nom
+    // Créé la variable de nom
     const nameOfProduct = document.getElementById("title").innerText;
-    // Récupère le prix
+    // Créé la variable de prix
     const priceOfProduct = parseInt(document.getElementById("price").innerText);
+    // Si la quantité est supérieur à 100
     if (quantityOfProduct > 100) {
         window.alert("Veuillez choisir une quantité inférieure ou égale à 100");
         return;
     }
+    // Si la couleur n'est pas sélectionnée
     if (colorOfProduct === "") {
         window.alert("Veuillez choisir une couleur");
         return;
     }
-    if (quantityOfProduct === 0) {
-        window.alert("Veuillez choisir une quantité");
+    // Si la quantité est égale à 0
+    if (quantityOfProduct <= 0) {
+        window.alert("Veuillez choisir une quantité supérieure à 0");
         return;
     }
+    // Si le panier est vide
     if (currentCart == null) {
         const products = Array({
             "id": id, "color": colorOfProduct, "quantity": quantityOfProduct,
@@ -83,7 +85,7 @@ function addToCart() {
                 "image": productImage, "title": nameOfProduct, "price": priceOfProduct
             });
             saveCart(currentCart);
-            window.alert("Ajouté au panier !");
+            window.alert("Produit ajouté au panier !");
         }
     }
 }
